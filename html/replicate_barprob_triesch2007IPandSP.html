@@ -1,0 +1,498 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>replicate_barprob_triesch2007IPandSP</title><meta name="generator" content="MATLAB 9.7"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-09-08"><meta name="DC.source" content="replicate_barprob_triesch2007IPandSP.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">Description of state variables</a></li><li><a href="#3">Plasticity rules</a></li><li><a href="#4">Parameters</a></li><li><a href="#5">Initialization</a></li><li><a href="#6">Training</a></li><li><a href="#7">Plot example inputs</a></li><li><a href="#8">Plot weight matrix</a></li><li><a href="#9">Plot summary of variables</a></li><li><a href="#10">Helper functions</a></li></ul></div><pre class="codeinput">clc; clear; close <span class="string">all</span>;
+run <span class="string">graphic_startup.m</span>; <span class="comment">% some settings for plotting</span>
+</pre><h2 id="2">Description of state variables</h2><pre>U: input units
+X: total current input
+Y: output unit
+W: weight from U to Y</pre><p><img src="replicate_barprob_triesch2007IPandSP_eq17968415939062471208.png" alt="$$U \rightarrow X = W U \rightarrow Y = g(X, a, b)$$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq01313988024921247052.png" alt="$$Y = g(X, a, b) = \frac{1}{1 + \exp\left[-(aX + b)\right]}$$"></p><h2 id="3">Plasticity rules</h2><p><b>Intrinsic plasticity from Triesch 2007</b></p><p><img src="replicate_barprob_triesch2007IPandSP_eq07122233528071087517.png" alt="$$ B = 1 - \left(2 + \frac{1}{\mu}\right) Y + \frac{1}{\mu}Y^2 $$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq03874007540857025017.png" alt="$$ da = \eta_{IP} \left(\frac{1}{a} + XB \right) $$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq08224110249534461233.png" alt="$$ db = \eta_{IP} B $$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq01479223600977867272.png" alt="$$ a \leftarrow a + da $$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq06637429493088652353.png" alt="$$ b \leftarrow b + db $$"></p><p><b>Synaptic plasticity, associative Hebbian</b></p><p><img src="replicate_barprob_triesch2007IPandSP_eq13468192198096800710.png" alt="$$ dW = \eta_{SP} Y U $$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq10308611635408248988.png" alt="$$ W \leftarrow W + dW $$"></p><p><img src="replicate_barprob_triesch2007IPandSP_eq03907465690512446711.png" alt="$$ W \leftarrow \frac{W}{||W||} $$"></p><h2 id="4">Parameters</h2><pre class="codeinput">N = 10; <span class="comment">% side of the square input field</span>
+N_U = N^2; <span class="comment">% number of inputs</span>
+N_Y = 1; <span class="comment">% number of outputs</span>
+
+<span class="comment">% Activation function parameters of Y</span>
+a_init = 1; <span class="comment">% gain</span>
+b_init = -1; <span class="comment">% bias</span>
+
+<span class="comment">% Learning parameters</span>
+eta_ip = 1e-2; <span class="comment">% learning rate of IP</span>
+eta_sp = 1e-2; <span class="comment">% learning rate of SP</span>
+mu = 1/(2*N); <span class="comment">% target mean output rate</span>
+
+<span class="comment">% Input generation parameters</span>
+num_train = 10e4; <span class="comment">% number of input instances to train</span>
+p_bar = 1/N; <span class="comment">% prob of bar turned on</span>
+</pre><h2 id="5">Initialization</h2><pre class="codeinput">a = a_init;
+b = b_init;
+W = normalize_weight(rand(N_Y, N_U)); <span class="comment">% from uniform random -&gt; norm L2</span>
+
+<span class="comment">% pre-generate inputs</span>
+U_trains = arrayfun(@(~) generate_bar_input(N, p_bar), 1:num_train, <span class="string">'uni'</span>, 0);
+
+<span class="comment">% pre-allocate to store trained data</span>
+Y_trains = zeros(N_Y,num_train);
+X_summary = zeros(N_Y,num_train);
+a_summary = zeros(N_Y,num_train);
+b_summary = zeros(N_Y,num_train);
+W_summary = zeros(N_U,num_train);
+</pre><h2 id="6">Training</h2><pre class="codeinput">tic
+
+<span class="keyword">for</span> i = 1:num_train
+
+    <span class="comment">% process input -&gt; output</span>
+    U = U_trains{i};
+    X = W * U;
+    Y = 1./(1 + exp(-(a.*X + b)));
+
+    <span class="comment">% save data</span>
+    Y_trains(:,i) = Y;
+    X_summary(:,i) = X;
+    W_summary(:,i) = W;
+    a_summary(:,i) = a;
+    b_summary(:,i) = b;
+
+    <span class="comment">% update trained variables</span>
+    <span class="comment">% Intrinsic plasticity followed Triesch 2007</span>
+    common_factor = 1 - (2 + 1./mu).*Y + (Y.^2)./mu;
+    da = eta_ip * (1./a + X .* common_factor);
+    db = eta_ip * common_factor;
+    a = a + da;
+    b = b + db;
+
+    <span class="comment">% Hebbian plasticity</span>
+    dW = eta_sp * (Y * U');
+    W = normalize_weight(W + dW);
+
+<span class="keyword">end</span>
+
+toc
+</pre><pre class="codeoutput">Elapsed time is 7.624382 seconds.
+</pre><h2 id="7">Plot example inputs</h2><pre class="codeinput">num_inp_toplot = 25;
+Us_toplot = U_trains(randperm(num_train, num_inp_toplot));
+nrows = ceil(sqrt(num_inp_toplot)); ncols = nrows;
+figure(<span class="string">'position'</span>, [0,0,0.5,1]); colormap(<span class="string">'gray'</span>);
+<span class="keyword">for</span> i = 1:num_inp_toplot
+    subplot(nrows,ncols,i); hold <span class="string">on</span>;
+    image(reshape(Us_toplot{i}, [N,N]));
+
+    <span class="keyword">if</span> i == 1
+        title({<span class="string">'example inputs'</span>, sprintf(<span class="string">'$p_{bar}=%g$'</span>, p_bar)});
+    <span class="keyword">end</span>
+
+    set(gca, <span class="string">'xtick'</span>, <span class="string">''</span>, <span class="string">'ytick'</span>, <span class="string">''</span>, <span class="string">'box'</span>, <span class="string">'on'</span>);
+    axis <span class="string">square</span>;
+    xlim([0.5,N+0.5]);
+    ylim([0.5,N+0.5]);
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="replicate_barprob_triesch2007IPandSP_01.png" alt=""> <h2 id="8">Plot weight matrix</h2><pre class="codeinput">num_W_toplot = 9;
+nrows = ceil(sqrt(num_W_toplot)); ncols = nrows;
+n_factor_plt = round(num_train/num_W_toplot);
+
+figure(<span class="string">'units'</span>, <span class="string">'normalized'</span>, <span class="string">'position'</span>, [0,0,0.6,1]);
+colormap(<span class="string">'gray'</span>);
+
+<span class="keyword">for</span> i = 1:num_W_toplot
+
+    T = (i-1)*n_factor_plt + 1;
+    W_plt = W_summary(:,T);
+    W_plt = reshape(W_plt, [N,N]);
+    U_plt = reshape(U_trains{T}, [N,N]);
+
+    subplot(nrows,ncols,i); hold <span class="string">on</span>;
+    image(W_plt);
+
+    title(sprintf(<span class="string">'$W_{T = %d}$'</span>, T));
+    <span class="comment">% caxis([0,0.2]);</span>
+    axis <span class="string">square</span>;
+    set(gca, <span class="string">'xcolor'</span>, <span class="string">'none'</span>, <span class="string">'ycolor'</span>, <span class="string">'none'</span>);
+    cbar = colorbar(<span class="string">'Location'</span>, <span class="string">'eastoutside'</span>);
+    cbar.Position = cbar.Position .* [1,1,1,0.6] + [0.03,-0.01,0,0];
+
+<span class="keyword">end</span>
+</pre><img vspace="5" hspace="5" src="replicate_barprob_triesch2007IPandSP_02.png" alt=""> <h2 id="9">Plot summary of variables</h2><pre class="codeinput">T_histYs = round(4/5 * num_train) : num_train;
+x_vec = linspace(-5,5,100);
+y_vec = linspace(0,max(Y_trains),100);
+theo_Ypdf = exp(-y_vec/mu)/mu;
+
+T_sampled = [1, [0.33,0.67,1]*num_train];
+
+figure;
+
+<span class="comment">% 1. Output values during training</span>
+subplot(3,3,[1,2]); hold <span class="string">on</span>;
+plot(Y_trains, <span class="string">'k.'</span>);
+title(<span class="string">'$Y$ during training'</span>);
+set(gca, <span class="string">'xcolor'</span>, <span class="string">'none'</span>);
+xlim([-1000, num_train]);
+
+<span class="comment">% 2. Output distributions</span>
+subplot(3,3,3); hold <span class="string">on</span>;
+histogram(Y_trains(:,T_histYs), 50, <span class="string">'edgecolor'</span>, <span class="string">'k'</span>, <span class="string">'linewidth'</span>, 2);
+plot(y_vec, theo_Ypdf, <span class="string">':b'</span>);
+title({sprintf(<span class="string">'$\\mu = %g, \\langle Y \\rangle = %.4f$'</span>, <span class="keyword">...</span>
+    mu, mean(Y_trains(:,T_histYs))), <span class="keyword">...</span>
+    sprintf(<span class="string">'distrib. from $T=%d$ to end'</span>, T_histYs(1))});
+xlabel(<span class="string">'output values'</span>); ylabel(<span class="string">'pdf'</span>);
+
+<span class="comment">% 2-inset. Log scale for Y-axis</span>
+ax_pos = get(gca, <span class="string">'position'</span>);
+inset_ax = axes(<span class="string">'position'</span>, ax_pos.*[1,1,0.6,0.6] + [0.1,0.05,0,0]);
+hold(inset_ax, <span class="string">'on'</span>);
+histogram(Y_trains(:,T_histYs), 50, <span class="string">'edgecolor'</span>, <span class="string">'k'</span>, <span class="string">'linewidth'</span>, 2);
+plot(y_vec, theo_Ypdf, <span class="string">':b'</span>);
+set(gca, <span class="string">'yscale'</span>, <span class="string">'log'</span>);
+ylabel(<span class="string">'log scale'</span>);
+
+legend(<span class="string">'trained'</span>, <span class="string">'$\frac{1}{\mu}e^{-y/\mu}$'</span>, <span class="keyword">...</span>
+    <span class="string">'Location'</span>, <span class="string">'northeast'</span>, <span class="string">'fontsize'</span>, 12);
+
+
+<span class="comment">% 3. Activation parameters during training</span>
+subplot(3,3,[4,5]);
+hold <span class="string">on</span>; plot(a_summary, <span class="string">'k'</span>); ylabel(<span class="string">'$a$'</span>);
+yyaxis <span class="string">right</span>;
+plot(b_summary, <span class="string">'color'</span>, 0.7*[1,1,1]); ylabel(<span class="string">'$b$'</span>);
+set(gca, <span class="string">'xcolor'</span>, <span class="string">'none'</span>, <span class="string">'ycolor'</span>, 0.7*[1,1,1]);
+
+title(sprintf(<span class="string">'$a$ and $b$ during training, $\\eta_{IP} = %g$'</span>, eta_ip));
+xlim([-1000, num_train]);
+
+<span class="comment">% 4. Sampled weights during training</span>
+subplot(3,3,[7,8]); hold <span class="string">on</span>;
+plot(W_summary(randperm(N_U, 50),:)', <span class="string">'linewidth'</span>,3, <span class="string">'color'</span>, [0,0,0,0.05]);
+title(sprintf(<span class="string">'evolution of some weights, $\\eta_{SP} = %g$'</span>, eta_sp));
+xlabel(<span class="string">'\# step'</span>);
+xlim([-1000, num_train]);
+
+<span class="comment">% 5. Distribution of weights</span>
+subplot(3,3,9); hold <span class="string">on</span>;
+arrayfun(@(i) histogram(W_summary(:,i), <span class="string">'linewidth'</span>, 2, <span class="string">'numbins'</span>, 5), T_sampled);
+title(<span class="string">'distrib. of weights ($W$)'</span>);
+xlabel(<span class="string">'weight values'</span>); ylabel(<span class="string">'pdf'</span>);
+lgnd = legend(<span class="string">'init'</span>, <span class="string">'1/3'</span>, <span class="string">'2/3'</span>, <span class="string">'end'</span>);
+title(lgnd, <span class="string">'training progress'</span>);
+</pre><img vspace="5" hspace="5" src="replicate_barprob_triesch2007IPandSP_03.png" alt=""> <h2 id="10">Helper functions</h2><pre class="codeinput"><span class="keyword">function</span> W = normalize_weight(W)
+    W = W ./ sqrt(sum(W.^2, 2));
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> X = generate_bar_input(N, p)
+    X = zeros(N);
+
+    <span class="comment">% pick random rows/columns to turn on</span>
+    index_on = rand(N,2) &lt; p;
+    X(index_on(:,1),:) = 1;
+    X(:,index_on(:,2)) = 1;
+
+    X = X(:); <span class="comment">% flatten</span>
+
+    <span class="comment">% normalized to L2</span>
+    norm_X = sqrt(sum(X.^2));
+    <span class="keyword">if</span> norm_X &gt; 0
+        X = X / norm_X;
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2019b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clc; clear; close all;
+run graphic_startup.m; % some settings for plotting 
+
+%% Description of state variables 
+%  U: input units 
+%  X: total current input 
+%  Y: output unit 
+%  W: weight from U to Y 
+%
+% $$U \rightarrow X = W U \rightarrow Y = g(X, a, b)$$
+%
+% $$Y = g(X, a, b) = \frac{1}{1 + \exp\left[-(aX + b)\right]}$$
+
+%% Plasticity rules 
+% *Intrinsic plasticity from Triesch 2007* 
+%
+% $$ B = 1 - \left(2 + \frac{1}{\mu}\right) Y + \frac{1}{\mu}Y^2 $$
+% 
+% $$ da = \eta_{IP} \left(\frac{1}{a} + XB \right) $$
+%
+% $$ db = \eta_{IP} B $$
+%
+% $$ a \leftarrow a + da $$
+%
+% $$ b \leftarrow b + db $$
+%
+% *Synaptic plasticity, associative Hebbian*
+%
+% $$ dW = \eta_{SP} Y U $$
+%
+% $$ W \leftarrow W + dW $$
+%
+% $$ W \leftarrow \frac{W}{||W||} $$
+
+%% Parameters 
+N = 10; % side of the square input field
+N_U = N^2; % number of inputs
+N_Y = 1; % number of outputs 
+
+% Activation function parameters of Y
+a_init = 1; % gain 
+b_init = -1; % bias
+
+% Learning parameters  
+eta_ip = 1e-2; % learning rate of IP
+eta_sp = 1e-2; % learning rate of SP
+mu = 1/(2*N); % target mean output rate
+
+% Input generation parameters 
+num_train = 10e4; % number of input instances to train 
+p_bar = 1/N; % prob of bar turned on 
+
+%% Initialization
+a = a_init; 
+b = b_init; 
+W = normalize_weight(rand(N_Y, N_U)); % from uniform random -> norm L2
+
+% pre-generate inputs 
+U_trains = arrayfun(@(~) generate_bar_input(N, p_bar), 1:num_train, 'uni', 0); 
+
+% pre-allocate to store trained data
+Y_trains = zeros(N_Y,num_train); 
+X_summary = zeros(N_Y,num_train); 
+a_summary = zeros(N_Y,num_train); 
+b_summary = zeros(N_Y,num_train); 
+W_summary = zeros(N_U,num_train); 
+
+%% Training 
+tic 
+
+for i = 1:num_train
+    
+    % process input -> output 
+    U = U_trains{i};  
+    X = W * U;   
+    Y = 1./(1 + exp(-(a.*X + b))); 
+    
+    % save data 
+    Y_trains(:,i) = Y;
+    X_summary(:,i) = X;
+    W_summary(:,i) = W;
+    a_summary(:,i) = a;
+    b_summary(:,i) = b;
+    
+    % update trained variables 
+    % Intrinsic plasticity followed Triesch 2007 
+    common_factor = 1 - (2 + 1./mu).*Y + (Y.^2)./mu;
+    da = eta_ip * (1./a + X .* common_factor);
+    db = eta_ip * common_factor;
+    a = a + da; 
+    b = b + db; 
+    
+    % Hebbian plasticity
+    dW = eta_sp * (Y * U');
+    W = normalize_weight(W + dW);
+    
+end
+
+toc
+
+%% Plot example inputs 
+num_inp_toplot = 25; 
+Us_toplot = U_trains(randperm(num_train, num_inp_toplot)); 
+nrows = ceil(sqrt(num_inp_toplot)); ncols = nrows; 
+figure('position', [0,0,0.5,1]); colormap('gray'); 
+for i = 1:num_inp_toplot
+    subplot(nrows,ncols,i); hold on;
+    image(reshape(Us_toplot{i}, [N,N])); 
+    
+    if i == 1
+        title({'example inputs', sprintf('$p_{bar}=%g$', p_bar)}); 
+    end
+    
+    set(gca, 'xtick', '', 'ytick', '', 'box', 'on'); 
+    axis square;
+    xlim([0.5,N+0.5]); 
+    ylim([0.5,N+0.5]);
+end
+
+%% Plot weight matrix 
+num_W_toplot = 9; 
+nrows = ceil(sqrt(num_W_toplot)); ncols = nrows; 
+n_factor_plt = round(num_train/num_W_toplot); 
+
+figure('units', 'normalized', 'position', [0,0,0.6,1]);
+colormap('gray');
+
+for i = 1:num_W_toplot
+    
+    T = (i-1)*n_factor_plt + 1; 
+    W_plt = W_summary(:,T);
+    W_plt = reshape(W_plt, [N,N]); 
+    U_plt = reshape(U_trains{T}, [N,N]);
+    
+    subplot(nrows,ncols,i); hold on;    
+    image(W_plt);
+    
+    title(sprintf('$W_{T = %d}$', T));  
+    % caxis([0,0.2]);
+    axis square;
+    set(gca, 'xcolor', 'none', 'ycolor', 'none'); 
+    cbar = colorbar('Location', 'eastoutside');
+    cbar.Position = cbar.Position .* [1,1,1,0.6] + [0.03,-0.01,0,0];
+
+end
+
+%% Plot summary of variables
+T_histYs = round(4/5 * num_train) : num_train; 
+x_vec = linspace(-5,5,100);
+y_vec = linspace(0,max(Y_trains),100); 
+theo_Ypdf = exp(-y_vec/mu)/mu;
+
+T_sampled = [1, [0.33,0.67,1]*num_train]; 
+
+figure; 
+
+% 1. Output values during training 
+subplot(3,3,[1,2]); hold on; 
+plot(Y_trains, 'k.'); 
+title('$Y$ during training'); 
+set(gca, 'xcolor', 'none'); 
+xlim([-1000, num_train]);
+
+% 2. Output distributions
+subplot(3,3,3); hold on;
+histogram(Y_trains(:,T_histYs), 50, 'edgecolor', 'k', 'linewidth', 2);
+plot(y_vec, theo_Ypdf, ':b');
+title({sprintf('$\\mu = %g, \\langle Y \\rangle = %.4f$', ...
+    mu, mean(Y_trains(:,T_histYs))), ...
+    sprintf('distrib. from $T=%d$ to end', T_histYs(1))});
+xlabel('output values'); ylabel('pdf');
+
+% 2-inset. Log scale for Y-axis
+ax_pos = get(gca, 'position');
+inset_ax = axes('position', ax_pos.*[1,1,0.6,0.6] + [0.1,0.05,0,0]);
+hold(inset_ax, 'on');
+histogram(Y_trains(:,T_histYs), 50, 'edgecolor', 'k', 'linewidth', 2);
+plot(y_vec, theo_Ypdf, ':b'); 
+set(gca, 'yscale', 'log'); 
+ylabel('log scale');
+
+legend('trained', '$\frac{1}{\mu}e^{-y/\mu}$', ...
+    'Location', 'northeast', 'fontsize', 12);
+
+
+% 3. Activation parameters during training 
+subplot(3,3,[4,5]); 
+hold on; plot(a_summary, 'k'); ylabel('$a$'); 
+yyaxis right; 
+plot(b_summary, 'color', 0.7*[1,1,1]); ylabel('$b$');
+set(gca, 'xcolor', 'none', 'ycolor', 0.7*[1,1,1]);
+
+title(sprintf('$a$ and $b$ during training, $\\eta_{IP} = %g$', eta_ip));
+xlim([-1000, num_train]);
+
+% 4. Sampled weights during training 
+subplot(3,3,[7,8]); hold on; 
+plot(W_summary(randperm(N_U, 50),:)', 'linewidth',3, 'color', [0,0,0,0.05]);
+title(sprintf('evolution of some weights, $\\eta_{SP} = %g$', eta_sp));
+xlabel('\# step');
+xlim([-1000, num_train]);
+
+% 5. Distribution of weights 
+subplot(3,3,9); hold on;
+arrayfun(@(i) histogram(W_summary(:,i), 'linewidth', 2, 'numbins', 5), T_sampled); 
+title('distrib. of weights ($W$)');
+xlabel('weight values'); ylabel('pdf'); 
+lgnd = legend('init', '1/3', '2/3', 'end'); 
+title(lgnd, 'training progress');
+
+%% Helper functions
+function W = normalize_weight(W)
+    W = W ./ sqrt(sum(W.^2, 2)); 
+end
+
+function X = generate_bar_input(N, p)
+    X = zeros(N); 
+    
+    % pick random rows/columns to turn on 
+    index_on = rand(N,2) < p;
+    X(index_on(:,1),:) = 1;
+    X(:,index_on(:,2)) = 1;
+    
+    X = X(:); % flatten 
+    
+    % normalized to L2 
+    norm_X = sqrt(sum(X.^2));
+    if norm_X > 0
+        X = X / norm_X;
+    end
+
+end
+
+
+
+##### SOURCE END #####
+--></body></html>
